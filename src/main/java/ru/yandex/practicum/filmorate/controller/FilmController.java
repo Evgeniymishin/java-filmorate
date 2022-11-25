@@ -17,11 +17,14 @@ import java.util.Map;
 @RestController
 public class FilmController {
     private static int counter = 0;
-    private final static LocalDate MIN_DATE = LocalDate.of(1895, 12, 28);
-    private final static String MIN_DATE_MSG = "Дата релиза не может быть раньше даты зарождения кино";
-    private final static String NO_FILM_MSG = "Такого фильма нет";
+    private static final LocalDate MIN_DATE = LocalDate.of(1895, 12, 28);
+    private static final String MIN_DATE_MSG = "Дата релиза не может быть раньше даты зарождения кино";
+    private static final String NO_FILM_MSG = "Такого фильма нет";
     private final Map<Integer, Film> films = new HashMap<>();
 
+    private static void counterIncrease() {
+        counter++;
+    }
     private void validateFilmDate(Film film) {
         if (film.getReleaseDate().isBefore(MIN_DATE)) {
             log.error("Ошибка валидации: {}", MIN_DATE_MSG);
@@ -37,7 +40,8 @@ public class FilmController {
     @PostMapping(value = "/films")
     public Film createFilm(@Valid @RequestBody Film film) {
         validateFilmDate(film);
-        film.setId(++counter);
+        counterIncrease();
+        film.setId(counter);
         films.put(film.getId(), film);
         log.info("Создан фильм с id = {}", film.getId());
         return film;

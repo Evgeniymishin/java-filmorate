@@ -17,6 +17,10 @@ public class UserController {
     private static int counter = 0;
     private final Map<Integer, User> users = new HashMap<>();
 
+    private static void counterIncrease() {
+        counter++;
+    }
+
     @GetMapping("/users")
     public List<User> getAllUsers() {
         return new ArrayList<>(users.values());
@@ -28,7 +32,8 @@ public class UserController {
             user.setName(user.getLogin());
         }
         log.info("Создан пользователь с id = {}", user.getId());
-        user.setId(++counter);
+        counterIncrease();
+        user.setId(counter);
         users.put(user.getId(), user);
         return user;
     }
