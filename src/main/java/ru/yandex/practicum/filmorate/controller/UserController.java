@@ -1,50 +1,42 @@
 package ru.yandex.practicum.filmorate.controller;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.storage.user.InMemoryUserStorage;
 
 import javax.validation.Valid;
-import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @RestController
 public class UserController {
-    private static int counter = 0;
-    private final Map<Integer, User> users = new HashMap<>();
+    private final InMemoryUserStorage storage;
 
-    private static void counterIncrease() {
-        counter++;
+    @Autowired
+    public UserController(InMemoryUserStorage storage) {
+        this.storage = storage;
     }
 
     @GetMapping("/users")
-    public List<User> getAllUsers() {
-        return new ArrayList<>(users.values());
+    public List <User> getAllUsers() {
+        return storage.getAll();
     }
 
     @PostMapping(value = "/users")
     public User createUser(@Valid @RequestBody User user) {
-        if (user.getName() == null || user.getName().isEmpty()) {
-            user.setName(user.getLogin());
-        }
-        log.info("Создан пользователь с id = {}", user.getId());
-        counterIncrease();
-        user.setId(counter);
-        users.put(user.getId(), user);
-        return user;
+        log.info("Создан пользователь с id = {}", user.getId() + 1);
+        return storage.create(user);
     }
 
     @PutMapping("/users")
     public User updateUser(@Valid @RequestBody User user) {
-        if (users.get(user.getId()) == null) {
+        if (storage.getAll().get(user.getId() - 1) == null) {
             throw new NotFoundException("Такого пользователя нет");
         }
         log.info("Обновлен пользователь с id = {}", user.getId());
-        users.put(user.getId(), user);
-        return user;
+        return storage.update(user);
     }
 }
