@@ -5,6 +5,8 @@ import org.springframework.format.annotation.DateTimeFormat;
 
 import javax.validation.constraints.*;
 import java.time.LocalDate;
+import java.util.HashSet;
+import java.util.Set;
 
 @Data
 public class Film {
@@ -18,4 +20,21 @@ public class Film {
     private LocalDate releaseDate;
     @Positive
     private int duration;
+    Set<Integer> likes = new HashSet<>();
+
+    public void like(Integer userId) {
+        likes.add(userId);
+    }
+
+    public void disLike(Integer userId) {
+        likes.remove(userId);
+    }
+
+    public Integer getLikesCount() {
+        return likes.size();
+    }
+
+    public Set<Integer> getLikes() {
+        return likes;
+    }
 }
