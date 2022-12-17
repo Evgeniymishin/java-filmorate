@@ -30,21 +30,18 @@ public class FilmController {
 
     private void validateFilmDate(Film film) {
         if (film.getReleaseDate().isBefore(MIN_DATE)) {
-            log.error("Ошибка валидации: {}", MIN_DATE_MSG);
             throw new ValidationException(MIN_DATE_MSG);
         }
     }
 
     public void validateFilmAvailability(Film film) {
         if (storage.getAll().get(film.getId() - 1) == null) {
-            log.error("Ошибка валидации: {}", NO_FILM_MSG);
             throw new NotFoundException(NO_FILM_MSG);
         }
     }
 
     public void validateFilmAvailabilityById(Integer id) {
         if (storage.getAll().get(id - 1) == null) {
-            log.error("Ошибка валидации: {}", NO_FILM_MSG);
             throw new NotFoundException(NO_FILM_MSG);
         }
     }
