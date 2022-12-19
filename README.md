@@ -1,6 +1,6 @@
 # java-filmorate
 
-![Filmogram](https://user-images.githubusercontent.com/32869331/208204808-863beaf5-0a3b-46e6-95a2-a35ef9fd2c54.png)
+![Filmogram](https://user-images.githubusercontent.com/32869331/208479239-d34ede09-c1f7-4ff7-9ce8-8be5fd318443.png)
 
 ## Запросы (примерные)
 
