@@ -37,7 +37,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     public List<Film> getAll() {
         String sqlQuery = "SELECT FILM.*, m.* " +
                 "FROM FILM " +
-                "JOIN MPA m ON m.MPA_ID = FILM.mpa_id";;
+                "JOIN MPA m ON m.MPA_ID = FILM.mpa_id";
         List<Film> films = jdbcTemplate.query(sqlQuery, FilmDbStorageImpl::createFilm);
         loadGenres(films);
         return films;
@@ -83,7 +83,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         String sqlQuery = "SELECT FILM.*, m.* " +
                 "FROM FILM " +
                 "JOIN MPA m ON m.MPA_ID = FILM.MPA_ID " +
-                "WHERE FILM.FILM_ID = ?";;
+                "WHERE FILM.FILM_ID = ?";
         try {
             Film film = jdbcTemplate.queryForObject(sqlQuery, FilmDbStorageImpl::createFilm, id);
             loadGenres(Collections.singletonList(film));
