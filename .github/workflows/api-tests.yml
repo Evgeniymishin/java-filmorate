@@ -5,33 +5,6 @@ on:
   workflow_call:
 
 jobs:
-  check-repo:
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Check repo not fork and public
-        run: |
-          REPO=$(curl -H "Accept: application/vnd.github+json" "${GITHUB_API_URL}/repos/${GITHUB_REPOSITORY}")
-          if jq -er '.fork' <<<"$REPO" > /dev/null; then
-            FORK=$(jq '.fork' <<< "$REPO")
-            if [[ $FORK = "true" ]]
-            then
-              echo "Please use only GENERATED FROM repository (NOT FORK)"
-              exit -1
-            fi
-          else
-            if [[ $GITHUB_REPOSITORY_OWNER = "yandex-praktikum" ]]
-            then
-              echo "Please use only GENERATED FROM repository (NOT FORK)"
-              exit -2
-            fi
-            if [[ $GITHUB_REPOSITORY_OWNER != "praktikum-java" ]]
-            then
-              echo "${GITHUB_REPOSITORY_OWNER}"
-              echo "Please set repository ${GITHUB_REPOSITORY} - PUBLIC"
-              exit -3
-            fi
-          fi
   build-filmorate:
 
     needs: check-repo
