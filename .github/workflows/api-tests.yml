@@ -7,7 +7,6 @@ on:
 jobs:
   build-filmorate:
 
-    needs: check-repo
     runs-on: ubuntu-latest
 
     steps:
