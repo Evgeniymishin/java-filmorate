@@ -102,7 +102,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         deleteFromFilmLikes(id);
         deleteGenres(film.get());
         deleteFromFilm(id);
-        log.info("Удалён фильм с идентификатор {}", id);
+        log.info("Удалён фильм с идентификатором {}", id);
         return film;
     }
 
