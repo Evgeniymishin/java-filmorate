@@ -53,4 +53,9 @@ public class FilmController {
         return service.dislike(id, userId);
     }
 
+    @DeleteMapping("/films/{filmId}")
+    public void deleteFilm(@PathVariable Integer filmId) {
+        service.deleteFilm(filmId);
+    }
+
 }

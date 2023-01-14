@@ -9,6 +9,7 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.User;
 
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -72,4 +73,9 @@ public class UserService {
         return storage.getFriendsListById(id);
     }
 
+    public Optional<User> deleteUser(Integer userId) {
+        validateUser(userId);
+        log.info("Пользователь с id {} удалён", userId);
+        return storage.deleteById(userId);
+    }
 }
