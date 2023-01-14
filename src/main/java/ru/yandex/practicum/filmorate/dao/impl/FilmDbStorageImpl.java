@@ -18,7 +18,6 @@ import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.sql.Date;
 import java.sql.PreparedStatement;
@@ -101,9 +100,9 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     public Optional<Film> deleteById(Integer id) {
         Optional<Film> film = getById(id);
         deleteFromFilmLikes(id);
-        deleteFromFilmGenre(id);
+        deleteGenres(film.get());
         deleteFromFilm(id);
-        log.info("Удалён фильм с идентефикатором {}", id);
+        log.info("Удалён фильм с идентификатор {}", id);
         return film;
     }
 
@@ -190,11 +189,6 @@ public class FilmDbStorageImpl implements FilmDbStorage {
 
     private void deleteFromFilm(Integer id) {
         String sqlQuery = "DELETE FROM FILM WHERE FILM_ID = ?";
-        jdbcTemplate.update(sqlQuery, id);
-    }
-
-    private void deleteFromFilmGenre(Integer id) {
-        String sqlQuery = "DELETE FROM FILMGENRE WHERE FILM_ID = ?";
         jdbcTemplate.update(sqlQuery, id);
     }
 

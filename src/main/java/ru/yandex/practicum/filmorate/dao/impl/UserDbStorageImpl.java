@@ -91,6 +91,7 @@ public class UserDbStorageImpl implements UserDbStorage {
         deleteFromFilmUsersLikes(id);
         deleteFromFriends(id);
         deleteFromUsers(id);
+        log.info("Пользователь с id {} удалён", id);
         return user;
     }
 

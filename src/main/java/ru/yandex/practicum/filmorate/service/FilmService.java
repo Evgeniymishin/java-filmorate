@@ -86,7 +86,6 @@ public class FilmService {
 
     public Optional<Film> deleteFilm(Integer filmId) {
         validateFilmAvailabilityById(filmId);
-        log.info("Пользователь с id {} удалён", filmId);
         return storage.deleteById(filmId);
     }
 }

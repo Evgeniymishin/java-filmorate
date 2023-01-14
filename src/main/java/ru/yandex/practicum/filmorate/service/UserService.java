@@ -75,7 +75,6 @@ public class UserService {
 
     public Optional<User> deleteUser(Integer userId) {
         validateUser(userId);
-        log.info("Пользователь с id {} удалён", userId);
         return storage.deleteById(userId);
     }
 }
