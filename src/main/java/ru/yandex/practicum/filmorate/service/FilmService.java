@@ -10,9 +10,11 @@ import ru.yandex.practicum.filmorate.dao.impl.UserDbStorageImpl;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 @Slf4j
 @Service
@@ -89,5 +91,9 @@ public class FilmService {
             throw new NotFoundException("Режиссер не найден");
         });
         return storage.getAllByDirector(directorId, sortBy);
+
+    public Optional<Film> deleteFilm(Integer filmId) {
+        validateFilmAvailabilityById(filmId);
+        return storage.deleteById(filmId);
     }
 }
