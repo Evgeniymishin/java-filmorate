@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
@@ -29,6 +30,7 @@ import java.util.stream.Collectors;
 @Slf4j
 @Repository
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Qualifier("FilmDbStorage")
 public class FilmDbStorageImpl implements FilmDbStorage {
     private final JdbcTemplate jdbcTemplate;
     private final NamedParameterJdbcTemplate namedJdbcTemplate;
@@ -97,10 +99,10 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     @Override
     public Optional<Film> deleteById(Integer id) {
         Optional<Film> film = getById(id);
-        String sqlQuery = "DELETE FROM FILM WHERE FILM_ID = ?";
-        String sqlQueryGenres = "DELETE FROM FILMGENRE WHERE FILM_ID = ?";
-        jdbcTemplate.update(sqlQuery, id);
-        jdbcTemplate.update(sqlQueryGenres, id);
+        deleteFromFilmLikes(id);
+        deleteGenres(film.get());
+        deleteFromFilm(id);
+        log.info("Удалён фильм с идентификатором {}", id);
         return film;
     }
 
@@ -185,4 +187,13 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         jdbcTemplate.update(deleteGenres, film.getId());
     }
 
+    private void deleteFromFilm(Integer id) {
+        String sqlQuery = "DELETE FROM FILM WHERE FILM_ID = ?";
+        jdbcTemplate.update(sqlQuery, id);
+    }
+
+    private void deleteFromFilmLikes(Integer id) {
+        String sqlQuery = "DELETE FROM FILMLIKES WHERE FILM_ID = ?";
+        jdbcTemplate.update(sqlQuery, id);
+    }
 }

@@ -3,6 +3,7 @@ package ru.yandex.practicum.filmorate.dao.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
@@ -22,6 +23,7 @@ import java.util.*;
 @Slf4j
 @Repository
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Qualifier("UserDbStorage")
 public class UserDbStorageImpl implements UserDbStorage {
     private final JdbcTemplate jdbcTemplate;
 
@@ -40,7 +42,7 @@ public class UserDbStorageImpl implements UserDbStorage {
         String sqlQuery = "SELECT * FROM USERS WHERE USER_ID = ?";
         try {
             return Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, UserDbStorageImpl::createUser, id));
-        } catch (DataAccessException e){
+        } catch (DataAccessException e) {
             log.warn("Пользователь с идентификатором {} не найден.", id);
             return Optional.empty();
         }
@@ -85,9 +87,11 @@ public class UserDbStorageImpl implements UserDbStorage {
 
     @Override
     public Optional<User> deleteById(Integer id) {
-        String sqlQuery = "delete from USERS where USER_ID = ?";
         Optional<User> user = getById(id);
-        jdbcTemplate.update(sqlQuery, id);
+        deleteFromFilmUsersLikes(id);
+        deleteFromFriends(id);
+        deleteFromUsers(id);
+        log.info("Пользователь с id {} удалён", id);
         return user;
     }
 
@@ -109,7 +113,7 @@ public class UserDbStorageImpl implements UserDbStorage {
     }
 
     @Override
-    public List<User> getFriendsListById (Integer id) {
+    public List<User> getFriendsListById(Integer id) {
         String sqlQuery = "SELECT USERS.USER_ID, EMAIL, LOGIN, NAME, BIRTHDAY " +
                 "FROM USERS " +
                 "LEFT JOIN USERFRIENDS f on users.USER_ID = f.SECOND_USER_ID " +
@@ -132,4 +136,18 @@ public class UserDbStorageImpl implements UserDbStorage {
         return jdbcTemplate.query(sqlQuery, UserDbStorageImpl::createUser, firstUserId, secondUserId);
     }
 
+    private void deleteFromUsers(Integer id) {
+        String sqlQuery = "delete from USERS where USER_ID = ?";
+        jdbcTemplate.update(sqlQuery, id);
+    }
+
+    private void deleteFromFilmUsersLikes(Integer id) {
+        String sqlQuery = "DELETE FROM FILMLIKES WHERE USER_ID = ?";
+        jdbcTemplate.update(sqlQuery, id);
+    }
+
+    private void deleteFromFriends(Integer id) {
+        String sqlQuery = "DELETE FROM USERFRIENDS WHERE INITIAL_USER_ID = ? OR SECOND_USER_ID = ?";
+        jdbcTemplate.update(sqlQuery, id, id);
+    }
 }
