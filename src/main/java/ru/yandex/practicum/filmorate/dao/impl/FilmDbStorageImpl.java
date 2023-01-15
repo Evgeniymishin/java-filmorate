@@ -108,9 +108,9 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         String sqlQuery = "DELETE FROM FILM WHERE FILM_ID = ?";
         String sqlQueryGenres = "DELETE FROM FILMGENRE WHERE FILM_ID = ?";
         String sqlQueryDirectors = "DELETE FROM FILMDIRECTOR WHERE FILM_ID = ?";
-        jdbcTemplate.update(sqlQuery, id);
         jdbcTemplate.update(sqlQueryGenres, id);
         jdbcTemplate.update(sqlQueryDirectors, id);
+        jdbcTemplate.update(sqlQuery, id);
         deleteFromFilmLikes(id);
         deleteGenres(film.get());
         deleteFromFilm(id);

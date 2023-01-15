@@ -25,7 +25,9 @@ public class FilmDbStorageTest {
     @Autowired
     @Qualifier("FilmDbStorage")
     private final FilmDbStorage filmStorage;
+    private final DirectorDbStorageImpl directorStorage;
     private Film film;
+    private Director director;
 
     @BeforeEach
     public void beforeEach() {
@@ -37,6 +39,8 @@ public class FilmDbStorageTest {
                 new Mpa(1, null),
                 new LinkedHashSet<>(List.of(new Genre(1, null), new Genre(2, null))),
                 new LinkedHashSet<>(List.of(new Director(1, null))));
+        director = new Director(1, "Director name");
+        directorStorage.create(director);
     }
 
     @Test
