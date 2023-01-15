@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.impl.DirectorDbStorageImpl;
 import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorageImpl;
 import ru.yandex.practicum.filmorate.dao.impl.UserDbStorageImpl;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -19,9 +20,9 @@ import java.util.List;
 public class FilmService {
     private final FilmDbStorageImpl storage;
     private final UserDbStorageImpl userStorage;
+    private final DirectorDbStorageImpl directorStorage;
     private static final LocalDate MIN_DATE = LocalDate.of(1895, 12, 28);
     private static final String MIN_DATE_MSG = "Дата релиза не может быть раньше даты зарождения кино";
-    private static final String NO_FILM_MSG = "Такого фильма нет";
 
     private void validateFilmDate(Film film) {
         if (film.getReleaseDate().isBefore(MIN_DATE)) {
@@ -80,5 +81,13 @@ public class FilmService {
 
     public List<Film> getMostPopularFilms(Integer count) {
         return storage.getMostPopularFilms(count);
+    }
+
+    public List<Film> getAllByDirector(Integer directorId, String sortBy) {
+        directorStorage.getById(directorId).orElseThrow(() -> {
+            log.warn("Режиссер с id {} не найден", directorId);
+            throw new NotFoundException("Режиссер не найден");
+        });
+        return storage.getAllByDirector(directorId, sortBy);
     }
 }

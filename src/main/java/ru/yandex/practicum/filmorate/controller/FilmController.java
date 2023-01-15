@@ -7,15 +7,11 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FilmController {
-    private static final LocalDate MIN_DATE = LocalDate.of(1895, 12, 28);
-    private static final String MIN_DATE_MSG = "Дата релиза не может быть раньше даты зарождения кино";
-    private static final String NO_FILM_MSG = "Такого фильма нет";
     private final FilmService service;
 
     @GetMapping("/films")
@@ -53,4 +49,8 @@ public class FilmController {
         return service.dislike(id, userId);
     }
 
+    @GetMapping("/films/director/{directorId}")
+    public List<Film> getAllFilmsByDirector(@PathVariable Integer directorId, @RequestParam(defaultValue = "year") String sortBy) {
+        return service.getAllByDirector(directorId, sortBy);
+    }
 }
