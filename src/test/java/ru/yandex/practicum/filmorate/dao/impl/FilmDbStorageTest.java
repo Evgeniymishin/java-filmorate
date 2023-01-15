@@ -8,6 +8,7 @@ import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.test.autoconfigure.jdbc.AutoConfigureTestDatabase;
 import org.springframework.boot.test.context.SpringBootTest;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
+import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
@@ -34,7 +35,8 @@ public class FilmDbStorageTest {
                 LocalDate.of(1996, 6, 3),
                 136,
                 new Mpa(1, null),
-                new LinkedHashSet<>(List.of(new Genre(1, null), new Genre(2, null))));
+                new LinkedHashSet<>(List.of(new Genre(1, null), new Genre(2, null))),
+                new LinkedHashSet<>(List.of(new Director(1, null))));
     }
 
     @Test
@@ -53,7 +55,8 @@ public class FilmDbStorageTest {
                 LocalDate.of(1997, 12, 19),
                 194,
                 new Mpa(2, null),
-                new LinkedHashSet<>(List.of(new Genre(3, null))));
+                new LinkedHashSet<>(List.of(new Genre(3, null))),
+                new LinkedHashSet<>(List.of(new Director(1, null))));
         filmStorage.create(film2);
         List<Film> films = new ArrayList<>(filmStorage.getAll());
         assertEquals(2, films.size());
