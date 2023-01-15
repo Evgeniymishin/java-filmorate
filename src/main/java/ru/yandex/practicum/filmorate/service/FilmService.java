@@ -91,7 +91,8 @@ public class FilmService {
             throw new NotFoundException("Режиссер не найден");
         });
         return storage.getAllByDirector(directorId, sortBy);
-
+    }
+    
     public Optional<Film> deleteFilm(Integer filmId) {
         validateFilmAvailabilityById(filmId);
         return storage.deleteById(filmId);
