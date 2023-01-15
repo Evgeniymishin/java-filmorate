@@ -92,7 +92,7 @@ public class FilmService {
         });
         return storage.getAllByDirector(directorId, sortBy);
     }
-    
+
     public Optional<Film> deleteFilm(Integer filmId) {
         validateFilmAvailabilityById(filmId);
         return storage.deleteById(filmId);

@@ -105,19 +105,16 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     @Override
     public Optional<Film> deleteById(Integer id) {
         Optional<Film> film = getById(id);
-<<<<<<< HEAD
         String sqlQuery = "DELETE FROM FILM WHERE FILM_ID = ?";
         String sqlQueryGenres = "DELETE FROM FILMGENRE WHERE FILM_ID = ?";
         String sqlQueryDirectors = "DELETE FROM FILMDIRECTOR WHERE FILM_ID = ?";
         jdbcTemplate.update(sqlQuery, id);
         jdbcTemplate.update(sqlQueryGenres, id);
         jdbcTemplate.update(sqlQueryDirectors, id);
-=======
         deleteFromFilmLikes(id);
         deleteGenres(film.get());
         deleteFromFilm(id);
         log.info("Удалён фильм с идентификатором {}", id);
->>>>>>> develop
         return film;
     }
 
@@ -203,7 +200,6 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         jdbcTemplate.update(deleteGenres, film.getId());
     }
 
-<<<<<<< HEAD
     private void addDirectors(Film film) {
         if (film.getDirectors() != null) {
             String sqlQuery = "INSERT INTO FILMDIRECTOR (FILM_ID, DIRECTOR_ID) VALUES (?, ?)";
