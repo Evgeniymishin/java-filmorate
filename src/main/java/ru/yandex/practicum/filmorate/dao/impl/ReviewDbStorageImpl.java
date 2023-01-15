@@ -36,7 +36,7 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
             Integer id = insert.executeAndReturnKey(review.toMap()).intValue();
             return getById(id);
         } else {
-            review.setId(list.get(0));
+            review.setReviewId(list.get(0));
             return update(review);
         }
     }
@@ -62,15 +62,13 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
 
     @Override
     public Optional<Review> update(Review rowData) {
-        String query = "update REVIEWS set content = ?, is_positive = ?, user_id = ?, film_id = ? where id = ?";
+        String query = "update REVIEWS set content = ?, is_positive = ? where id = ?";
         int update = jdbcTemplate.update(query
                 , rowData.getContent()
                 , rowData.getIsPositive()
-                , rowData.getUserId()
-                , rowData.getFilmId()
-                , rowData.getId());
+                , rowData.getReviewId());
         if (update > 0) {
-            return getById(rowData.getId());
+            return getById(rowData.getReviewId());
         }
         return Optional.empty();
     }
@@ -79,7 +77,7 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
     public List<Review> getFilmReview(Integer filmId, Integer limit) {
         String query = "select a.*, ((select count(*) from REVIEWSRATING where review_id = a.id and likes = true) - " +
                 "(select count(*) from REVIEWSRATING where review_id = a.id and dislikes = true))::integer as useful " +
-                "from REVIEWS a where film_id = (case when ? is not null then ? else id end) " +
+                "from REVIEWS a where film_id = (case when ? is not null then ? else film_id end) " +
                 "order by useful desc  limit ?";
         return jdbcTemplate.query(query, this::mapRowToReview, filmId, filmId, limit);
     }
@@ -126,16 +124,16 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
     private ReviewRating mapRowToReviewRating(ResultSet resultSet, int i) throws SQLException {
         return ReviewRating.builder()
                 .id(resultSet.getInt("id"))
-                .reviewId(resultSet.getInt("content"))
-                .userId(resultSet.getInt("is_positive"))
-                .like(resultSet.getBoolean("user_id"))
-                .dislike(resultSet.getBoolean("film_id"))
+                .reviewId(resultSet.getInt("review_id"))
+                .userId(resultSet.getInt("user_id"))
+                .like(resultSet.getBoolean("likes"))
+                .dislike(resultSet.getBoolean("dislikes"))
                 .build();
     }
 
     private Review mapRowToReview(ResultSet resultSet, int rowNum) throws SQLException {
         return Review.builder()
-                .id(resultSet.getInt("id"))
+                .reviewId(resultSet.getInt("id"))
                 .content(resultSet.getString("content"))
                 .isPositive(resultSet.getBoolean("is_positive"))
                 .userId(resultSet.getInt("user_id"))

@@ -48,25 +48,25 @@ public class ReviewController {
         return new ResponseEntity<>(service.getFilmReview(filmId, count), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/like/{userId}")
-    public ResponseEntity<ReviewRating> likeReview(@PathVariable("id") Integer id, @PathVariable("userId") Integer userId) {
+    @PutMapping("/{reviewId}/like/{userId}")
+    public ResponseEntity<ReviewRating> likeReview(@PathVariable("reviewId") Integer id, @PathVariable("userId") Integer userId) {
         return new ResponseEntity<>(service.setLikesDislikes(id, userId, true, true), HttpStatus.OK);
     }
 
-    @PutMapping("/{id}/dislike/{userId}")
-    public ResponseEntity<ReviewRating> dislikeReview(@PathVariable("id") Integer id, @PathVariable("userId") Integer userId) {
+    @PutMapping("/{reviewId}/dislike/{userId}")
+    public ResponseEntity<ReviewRating> dislikeReview(@PathVariable("reviewId") Integer id, @PathVariable("userId") Integer userId) {
         return new ResponseEntity<>(service.setLikesDislikes(id, userId, false, true), HttpStatus.OK);
     }
 
-    @DeleteMapping("/{id}/like/{userId}")
+    @DeleteMapping("/{reviewId}/like/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public void deleteReviewsLike(@PathVariable("id") Integer id, @PathVariable("userId") Integer userId) {
+    public void deleteReviewsLike(@PathVariable("reviewId") Integer id, @PathVariable("userId") Integer userId) {
         service.setLikesDislikes(id, userId, true, false);
     }
 
-    @DeleteMapping("/{id}/dislike/{userId}")
+    @DeleteMapping("/{reviewId}/dislike/{userId}")
     @ResponseStatus(HttpStatus.OK)
-    public void deleteReviewsDislike(@PathVariable("id") Integer id, @PathVariable("userId") Integer userId) {
+    public void deleteReviewsDislike(@PathVariable("reviewId") Integer id, @PathVariable("userId") Integer userId) {
         service.setLikesDislikes(id, userId, false, false);
     }
 

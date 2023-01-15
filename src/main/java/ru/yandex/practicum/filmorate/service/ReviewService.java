@@ -17,8 +17,12 @@ import java.util.List;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class ReviewService {
     private final ReviewDbStorage storage;
+    private final UserService userService;
+    private final FilmService filmService;
 
     public Review addReview(Review rowData) {
+        userService.getById(rowData.getUserId());
+        filmService.getById(rowData.getFilmId());
         return storage.create(rowData).map(review -> {
                     log.info("Добавлен новый отзыв: {}", review.toString());
                     return review;
