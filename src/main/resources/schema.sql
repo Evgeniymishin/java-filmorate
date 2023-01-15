@@ -48,3 +48,25 @@ CREATE TABLE IF NOT EXISTS USERFRIENDS (
     CONSTRAINT "userfriends_user_id" FOREIGN KEY (initial_user_id) REFERENCES Users(user_id),
     CONSTRAINT "second_user_id" FOREIGN KEY (second_user_id) REFERENCES Users(user_id)
 );
+
+CREATE TABLE IF NOT EXISTS REVIEWS (
+    id INTEGER AUTO_INCREMENT,
+    content VARCHAR,
+    is_positive BOOLEAN NOT NULL,
+    user_id INTEGER,
+    film_id INTEGER,
+    CONSTRAINT "reviews" PRIMARY KEY (id),
+    CONSTRAINT "reviews_user_id" FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "reviews_film_id" FOREIGN KEY (film_id) REFERENCES FILM(film_id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS REVIEWSRATING (
+    id INTEGER AUTO_INCREMENT,
+    review_id INTEGER,
+    user_id INTEGER,
+    likes BOOLEAN DEFAULT FALSE,
+    dislikes BOOLEAN DEFAULT FALSE,
+    CONSTRAINT "reviews_rating" PRIMARY KEY (id),
+    CONSTRAINT "reviews_rating_user_id" FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE SET NULL ON UPDATE CASCADE,
+    CONSTRAINT "reviews_rating_review_id" FOREIGN KEY (review_id) REFERENCES REVIEWS(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
