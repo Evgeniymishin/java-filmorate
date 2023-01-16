@@ -29,17 +29,14 @@ public class DirectorService {
     }
 
     public Director create(Director director) {
-        log.info("Создан режиссер с id = {}", director.getId());
         return directorDbStorage.create(director);
     }
 
     public Director update(Director director) {
-        log.info("Обновлен режиссер с id = {}", director.getId());
         return directorDbStorage.update(director);
     }
 
     public Optional<Director> delete(Integer id) {
-        log.info("Удален режиссер с id = {}", id);
         return directorDbStorage.delete(id);
     }
 

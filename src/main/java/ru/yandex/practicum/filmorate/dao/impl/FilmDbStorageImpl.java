@@ -64,6 +64,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         film.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
         addGenres(film);
         addDirectors(film);
+        log.info("Создан фильм с идентификатором {}", film.getId());
         return film;
     }
 
@@ -82,6 +83,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         if (result == 0) {
             throw new NotFoundException("Фильм не найден в базе");
         }
+        log.info("Обновлен фильм с идентификатором {}", film.getId());
         return film;
     }
 
@@ -105,14 +107,9 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     @Override
     public Optional<Film> deleteById(Integer id) {
         Optional<Film> film = getById(id);
-        String sqlQuery = "DELETE FROM FILM WHERE FILM_ID = ?";
-        String sqlQueryGenres = "DELETE FROM FILMGENRE WHERE FILM_ID = ?";
-        String sqlQueryDirectors = "DELETE FROM FILMDIRECTOR WHERE FILM_ID = ?";
-        jdbcTemplate.update(sqlQueryGenres, id);
-        jdbcTemplate.update(sqlQueryDirectors, id);
-        jdbcTemplate.update(sqlQuery, id);
         deleteFromFilmLikes(id);
         deleteGenres(film.get());
+        deleteDirectors(film.get());
         deleteFromFilm(id);
         log.info("Удалён фильм с идентификатором {}", id);
         return film;
