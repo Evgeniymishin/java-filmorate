@@ -48,6 +48,7 @@ CREATE TABLE IF NOT EXISTS USERFRIENDS (
     CONSTRAINT "userfriends_user_id" FOREIGN KEY (initial_user_id) REFERENCES Users(user_id),
     CONSTRAINT "second_user_id" FOREIGN KEY (second_user_id) REFERENCES Users(user_id)
 );
+ 
 
 CREATE TABLE IF NOT EXISTS REVIEWS (
     id INTEGER AUTO_INCREMENT,
