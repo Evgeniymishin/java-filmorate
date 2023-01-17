@@ -48,3 +48,16 @@ CREATE TABLE IF NOT EXISTS USERFRIENDS (
     CONSTRAINT "userfriends_user_id" FOREIGN KEY (initial_user_id) REFERENCES Users(user_id),
     CONSTRAINT "second_user_id" FOREIGN KEY (second_user_id) REFERENCES Users(user_id)
 );
+
+CREATE TABLE IF NOT EXISTS DIRECTOR (
+    director_id integer NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name varchar
+);
+
+CREATE TABLE IF NOT EXISTS FILMDIRECTOR (
+    film_id integer,
+    director_id integer,
+    CONSTRAINT "film_director" PRIMARY KEY (film_id, director_id),
+    CONSTRAINT "film_director_film_id" FOREIGN KEY (film_id) REFERENCES film(film_id),
+    CONSTRAINT "film_director_director_id" FOREIGN KEY (director_id) REFERENCES director(director_id)
+);

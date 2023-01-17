@@ -25,4 +25,5 @@ public class Film {
     private Integer duration;
     private Mpa mpa;
     private LinkedHashSet<Genre> genres;
+    private LinkedHashSet<Director> directors;
 }
