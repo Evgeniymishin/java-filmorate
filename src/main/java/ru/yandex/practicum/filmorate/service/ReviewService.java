@@ -41,8 +41,8 @@ public class ReviewService {
     }
 
     public void deleteReview(Integer id) {
-        log.info("Удален отзыв: {}", id);
         storage.deleteById(id);
+        log.info("Удален отзыв: {}", id);
     }
 
     public Review updateReview(Review rowData) {
