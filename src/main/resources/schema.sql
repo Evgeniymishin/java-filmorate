@@ -49,7 +49,6 @@ CREATE TABLE IF NOT EXISTS USERFRIENDS (
     CONSTRAINT "second_user_id" FOREIGN KEY (second_user_id) REFERENCES Users(user_id)
 );
 
-
 CREATE TABLE IF NOT EXISTS REVIEWS (
     id INTEGER AUTO_INCREMENT,
     content VARCHAR,
@@ -70,4 +69,17 @@ CREATE TABLE IF NOT EXISTS REVIEWSRATING (
     CONSTRAINT "reviews_rating" PRIMARY KEY (id),
     CONSTRAINT "reviews_rating_user_id" FOREIGN KEY (user_id) REFERENCES USERS(user_id) ON DELETE SET NULL ON UPDATE CASCADE,
     CONSTRAINT "reviews_rating_review_id" FOREIGN KEY (review_id) REFERENCES REVIEWS(id) ON DELETE CASCADE ON UPDATE CASCADE
+);
+
+CREATE TABLE IF NOT EXISTS DIRECTOR (
+    director_id integer NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    name varchar
+);
+
+CREATE TABLE IF NOT EXISTS FILMDIRECTOR (
+    film_id integer,
+    director_id integer,
+    CONSTRAINT "film_director" PRIMARY KEY (film_id, director_id),
+    CONSTRAINT "film_director_film_id" FOREIGN KEY (film_id) REFERENCES film(film_id),
+    CONSTRAINT "film_director_director_id" FOREIGN KEY (director_id) REFERENCES director(director_id)
 );
