@@ -10,7 +10,6 @@ import ru.yandex.practicum.filmorate.dao.impl.UserDbStorageImpl;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
-import ru.yandex.practicum.filmorate.model.User;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -96,5 +95,9 @@ public class FilmService {
     public Optional<Film> deleteById(Integer filmId) {
         validateFilmAvailabilityById(filmId);
         return storage.deleteById(filmId);
+    }
+
+    public List<Film> getSortedListFilm(String query, List<String> by) {
+        return storage.getSortedListFilm(query, by);
     }
 }
