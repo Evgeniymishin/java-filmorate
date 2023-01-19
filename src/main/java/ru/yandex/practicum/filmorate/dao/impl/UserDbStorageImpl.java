@@ -8,6 +8,7 @@ import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -149,5 +150,54 @@ public class UserDbStorageImpl implements UserDbStorage {
     private void deleteFromFriends(Integer id) {
         String sqlQuery = "DELETE FROM USERFRIENDS WHERE INITIAL_USER_ID = ? OR SECOND_USER_ID = ?";
         jdbcTemplate.update(sqlQuery, id, id);
+    }
+    @Override
+    public List<Integer> getRecommendations(Integer id) {
+        HashMap<Integer, List<Integer>> userLikes = new HashMap<>();
+        List<Integer> recommendFilmsId = new ArrayList<>();
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet("SELECT * FROM FILMLIKES where USER_ID IN " +
+                "(SELECT USER_ID FROM FILMLIKES where FILM_ID IN (SELECT FILM_ID FROM FILMLIKES where USER_ID=?)) ", id);
+        while (userRows.next()) {
+            insertLikeAndUser(userLikes, userRows.getInt("FILM_ID"), userRows.getInt("USER_ID"));
+        }
+        Integer idUserWithMaxMatchLikes = findUserWithMaxMatchLikes(userLikes, id);
+        if (idUserWithMaxMatchLikes != 0) {
+            for (Integer filmId : userLikes.get(idUserWithMaxMatchLikes)) {
+                if (!userLikes.get(id).contains(filmId)) {
+                    recommendFilmsId.add(filmId);
+                }
+            }
+        }
+        return recommendFilmsId;
+    }
+
+    private void insertLikeAndUser(Map<Integer, List<Integer>> usersLikes, int like, int userId) {
+        List<Integer> newUserLike = new ArrayList<>();
+        if (usersLikes.containsKey(userId)) {
+            newUserLike.add(like);
+            usersLikes.get(userId).addAll(newUserLike);
+        } else {
+            newUserLike.add(like);
+            usersLikes.put(userId, newUserLike);
+        }
+    }
+
+    private int findUserWithMaxMatchLikes(HashMap<Integer, List<Integer>> userLikes, int id) {
+        int maxMatchFilms = 0;
+        int userId = 0;
+        for (Map.Entry<Integer, List<Integer>> entry : userLikes.entrySet()) {
+            Integer matchFilm = 0;
+            if (entry.getKey() != id) {
+                for (Integer like : entry.getValue()) {
+                    if (userLikes.get(id).contains(like)) {
+                        matchFilm++;
+                    }
+                }
+            }
+            if (matchFilm > maxMatchFilms) {
+                userId = entry.getKey();
+            }
+        }
+        return userId;
     }
 }
