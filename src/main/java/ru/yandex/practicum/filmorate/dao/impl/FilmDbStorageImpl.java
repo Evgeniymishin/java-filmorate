@@ -130,24 +130,6 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         return getById(filmId);
     }
 
-    @Override
-    public List<Film> getMostPopularFilms(Integer count) {
-        String sql = "SELECT FILM.FILM_ID, FILM.NAME, DESCRIPTION, RELEASE_DATE, DURATION, m.MPA_ID, m.NAME " +
-                "FROM FILM " +
-                "LEFT JOIN FILMLIKES fl ON FILM.FILM_ID = fl.FILM_ID " +
-                "LEFT JOIN MPA m on m.MPA_ID = FILM.MPA_ID " +
-                "GROUP BY FILM.FILM_ID, fl.FILM_ID IN ( " +
-                "SELECT FILM_ID " +
-                "FROM FILMLIKES " +
-                ") " +
-                "ORDER BY COUNT(fl.FILM_ID) DESC " +
-                "LIMIT ?";
-        List<Film> films = jdbcTemplate.query(sql, FilmDbStorageImpl::createFilm, count);
-        loadGenres(films);
-        loadDirectors(films);
-        return films;
-    }
-
     static Film createFilm(ResultSet rs, Integer rowNum) throws SQLException {
         int id = rs.getInt("film_id");
         String name = rs.getString("name");
@@ -294,5 +276,10 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         loadGenres(films);
         loadDirectors(films);
         return films;
+    }
+    
+    public int getLikesByFilmId(Integer id) {
+        String sqlQuery = "SELECT USER_ID FROM FILMLIKES WHERE FILM_ID = ?";
+        return jdbcTemplate.queryForList(sqlQuery, id).size();
     }
 }
