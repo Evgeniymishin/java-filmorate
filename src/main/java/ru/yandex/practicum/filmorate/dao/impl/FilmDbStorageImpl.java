@@ -267,6 +267,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         loadDirectors(films);
         return films;
     }
+
     private void deleteFromFilm(Integer id) {
         String sqlQuery = "DELETE FROM FILM WHERE FILM_ID = ?";
         jdbcTemplate.update(sqlQuery, id);
@@ -277,4 +278,21 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         jdbcTemplate.update(sqlQuery, id);
     }
 
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        List<Film> films;
+        String getFilmsId = "SELECT F.*, M.* " +
+                "FROM FILMLIKES FL " +
+                "JOIN FILM F on FL.FILM_ID = F.FILM_ID " +
+                "JOIN MPA M on F.MPA_ID = M.MPA_ID " +
+                "WHERE (FL.USER_ID = ? OR FL.USER_ID = ?) AND " +
+                "FL.FILM_ID IN (SELECT FL.FILM_ID " +
+                "FROM FILMLIKES FL " +
+                "GROUP BY FL.FILM_ID " +
+                "having count(*) > 1) " +
+                "GROUP BY FL.FILM_ID ";
+        films = jdbcTemplate.query(getFilmsId, FilmDbStorageImpl::createFilm, userId, friendId);
+        loadGenres(films);
+        loadDirectors(films);
+        return films;
+    }
 }
