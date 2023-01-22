@@ -15,7 +15,6 @@ import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Director;
 import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
@@ -279,55 +278,28 @@ public class FilmDbStorageImpl implements FilmDbStorage {
 
     public List<Film> getSortedListFilm(String query, List<String> by) {
         List<Film> films;
-        if (by.isEmpty()) {
-            String sortedByPopularity = "SELECT f.*, m.* " +
-                    "FROM FILM f " +
-                    "JOIN MPA m on f.MPA_ID = m.MPA_ID " +
-                    "LEFT JOIN FILMLIKES fl on f.FILM_ID = fl.film_id " +
-                    "GROUP BY f.FILM_ID, fl.FILM_ID IN ( " +
-                    "SELECT FILM_ID " +
-                    "FROM FILMLIKES ) " +
-                    "ORDER BY COUNT(fl.FILM_ID) DESC";
-            films = jdbcTemplate.query(sortedByPopularity, FilmDbStorageImpl::createFilm);
-        } else if (by.size() == 2 & by.contains("director") & by.contains("title")) {
-            String sortedByDirectorAndTitle = "SELECT f.*, m.*, d.* " +
-                    "FROM FILM f " +
-                    "LEFT JOIN FILMDIRECTOR fd on f.FILM_ID = fd.FILM_ID " +
-                    "LEFT JOIN DIRECTOR d on fd.DIRECTOR_ID = d.DIRECTOR_ID " +
-                    "JOIN MPA m on f.MPA_ID = m.MPA_ID " +
-                    "LEFT JOIN FILMLIKES fl on f.FILM_ID = fl.film_id " +
-                    "WHERE regexp_like(d.name, ?, 'i') OR " +
-                    "regexp_like(f.name, ?, 'i')" +
-                    "GROUP BY f.FILM_ID, fl.FILM_ID IN ( " +
-                    "SELECT FILM_ID " +
-                    "FROM FILMLIKES ) " +
-                    "ORDER BY COUNT(fl.FILM_ID) DESC";
-            films = jdbcTemplate.query(sortedByDirectorAndTitle, FilmDbStorageImpl::createFilm, query, query);
-        } else if (by.size() == 1 & by.contains("director")) {
-            String sortedByDirector = "SELECT f.*, m.*, d.* " +
-                    "FROM FILM f " +
-                    "LEFT JOIN FILMDIRECTOR fd on f.FILM_ID = fd.FILM_ID " +
-                    "LEFT JOIN DIRECTOR d on fd.DIRECTOR_ID = d.DIRECTOR_ID " +
-                    "JOIN MPA m on f.MPA_ID = m.MPA_ID " +
-                    "LEFT JOIN FILMLIKES fl on f.FILM_ID = fl.film_id " +
-                    "WHERE regexp_like(d.name, ?, 'i') " +
-                    "GROUP BY f.FILM_ID, fl.FILM_ID IN ( " +
-                    "SELECT FILM_ID " +
-                    "FROM FILMLIKES ) " +
-                    "ORDER BY COUNT(fl.FILM_ID) DESC";
-            films = jdbcTemplate.query(sortedByDirector, FilmDbStorageImpl::createFilm, query);
-        } else if (by.size() == 1 & by.contains("title")) {
-            String sortedByTitle = "SELECT f.*, m.* " +
-                    "FROM FILM f " +
-                    "JOIN MPA m on f.MPA_ID = m.MPA_ID " +
-                    "LEFT JOIN FILMLIKES fl on f.FILM_ID = fl.film_id " +
-                    "WHERE regexp_like(f.name, ?, 'i')" +
-                    "GROUP BY f.FILM_ID, fl.FILM_ID IN ( " +
-                    "SELECT FILM_ID " +
-                    "FROM FILMLIKES ) " +
-                    "ORDER BY COUNT(fl.FILM_ID) DESC";
-            films = jdbcTemplate.query(sortedByTitle, FilmDbStorageImpl::createFilm, query);
-        } else throw new ValidationException("Неверный запрос на поиск фильмов по режиссеру/названию");
+        String director = null;
+        String title = null;
+
+        if (by.contains("director")) {
+            director = query;
+        }
+        if (by.contains("title")) {
+            title = query;
+        }
+        String sortedFilms = "SELECT f.*, m.*, d.* " +
+                "FROM FILM f " +
+                "LEFT JOIN FILMDIRECTOR fd on f.FILM_ID = fd.FILM_ID " +
+                "LEFT JOIN DIRECTOR d on fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                "JOIN MPA m on f.MPA_ID = m.MPA_ID " +
+                "LEFT JOIN FILMLIKES fl on f.FILM_ID = fl.film_id " +
+                "WHERE regexp_like(d.name, ?, 'i') OR " +
+                "regexp_like(f.name, ?, 'i')" +
+                "GROUP BY f.FILM_ID, fl.FILM_ID IN ( " +
+                "SELECT FILM_ID " +
+                "FROM FILMLIKES ) " +
+                "ORDER BY COUNT(fl.FILM_ID) DESC";
+        films = jdbcTemplate.query(sortedFilms, FilmDbStorageImpl::createFilm, director, title);
         loadGenres(films);
         loadDirectors(films);
         return films;
