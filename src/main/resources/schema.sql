@@ -1,4 +1,3 @@
-
 CREATE TABLE IF NOT EXISTS MPA (
     mpa_id integer NOT NULL PRIMARY KEY AUTO_INCREMENT,
     name varchar
