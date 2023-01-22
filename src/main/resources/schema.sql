@@ -1,3 +1,4 @@
+
 CREATE TABLE IF NOT EXISTS MPA (
     mpa_id integer NOT NULL PRIMARY KEY AUTO_INCREMENT,
     name varchar
@@ -82,4 +83,13 @@ CREATE TABLE IF NOT EXISTS FILMDIRECTOR (
     CONSTRAINT "film_director" PRIMARY KEY (film_id, director_id),
     CONSTRAINT "film_director_film_id" FOREIGN KEY (film_id) REFERENCES film(film_id),
     CONSTRAINT "film_director_director_id" FOREIGN KEY (director_id) REFERENCES director(director_id)
+);
+
+CREATE TABLE IF NOT EXISTS FEED (
+    event_id INTEGER NOT NULL PRIMARY KEY AUTO_INCREMENT,
+    user_id INTEGER NOT NULL,
+    entity_id INTEGER NOT NULL,
+    operation VARCHAR(6) NOT NULL,
+    event_type VARCHAR(6) NOT NULL,
+    timestamp LONG NOT NULL
 );

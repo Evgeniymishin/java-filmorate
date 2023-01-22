@@ -119,6 +119,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     public Optional<Film> addLike(Integer filmId, Integer userId) {
         String sqlQuery = "MERGE INTO FILMLIKES (film_id, user_id) VALUES (?, ?)";
         jdbcTemplate.update(sqlQuery, filmId, userId);
+        log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
         return getById(filmId);
     }
 
@@ -127,6 +128,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         String sqlQuery = "DELETE FROM FILMLIKES " +
                 "WHERE FILM_ID = ? AND USER_ID = ?";
         jdbcTemplate.update(sqlQuery, filmId, userId);
+        log.info("Пользователь {} поставил дизлайк фильму {}", userId, filmId);
         return getById(filmId);
     }
 
