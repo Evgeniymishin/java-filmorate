@@ -14,6 +14,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Slf4j
 @Service
@@ -80,8 +82,20 @@ public class FilmService {
         return storage.removeLike(filmId, userId).orElseThrow();
     }
 
-    public List<Film> getMostPopularFilms(Integer count) {
-        return storage.getMostPopularFilms(count);
+    public List<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
+        return getFilmsByYearFilter(getFilmsByGenreFilter(storage.getAll().stream(), genreId), year)
+                .sorted((p0, p1) -> storage.getLikesByFilmId(p1.getId()) - storage.getLikesByFilmId(p0.getId()))
+                .limit(count)
+                .collect(Collectors.toList());
+    }
+
+    private Stream<Film> getFilmsByYearFilter(Stream<Film> stream, Integer year) {
+        return (year == null) ? stream : stream.filter(f -> year.equals(f.getReleaseDate().getYear()));
+    }
+
+    private Stream<Film> getFilmsByGenreFilter(Stream<Film> stream, Integer genreId) {
+        return (genreId == null) ? stream : stream
+                .filter(f -> f.getGenres().stream().anyMatch(g -> genreId.equals(g.getId())));
     }
 
     public List<Film> getAllByDirector(Integer directorId, String sortBy) {

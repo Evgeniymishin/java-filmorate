@@ -13,7 +13,5 @@ public interface FilmDbStorage {
     Optional<Film> deleteById(Integer id);
     Optional<Film> addLike(Integer filmId, Integer userId);
     Optional<Film> removeLike(Integer filmId, Integer userId);
-    List<Film> getMostPopularFilms(Integer count);
-
     List<Film> getAllByDirector(Integer directorId, String sortBy);
 }
