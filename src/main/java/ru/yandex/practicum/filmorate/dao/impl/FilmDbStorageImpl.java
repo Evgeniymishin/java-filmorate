@@ -279,7 +279,6 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        List<Film> films;
         String getFilmsId = "SELECT F.*, M.* " +
                 "FROM FILMLIKES FL " +
                 "JOIN FILM F on FL.FILM_ID = F.FILM_ID " +
@@ -290,7 +289,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "GROUP BY FL.FILM_ID " +
                 "having count(*) > 1) " +
                 "GROUP BY FL.FILM_ID ";
-        films = jdbcTemplate.query(getFilmsId, FilmDbStorageImpl::createFilm, userId, friendId);
+        List<Film> films = jdbcTemplate.query(getFilmsId, FilmDbStorageImpl::createFilm, userId, friendId);
         loadGenres(films);
         loadDirectors(films);
         return films;
