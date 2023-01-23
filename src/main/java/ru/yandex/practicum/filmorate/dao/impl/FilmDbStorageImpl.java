@@ -261,22 +261,32 @@ public class FilmDbStorageImpl implements FilmDbStorage {
     }
 
     public List<Film> getCommonFilms(Integer userId, Integer friendId) {
-        String getFilmsId = "SELECT F.*, M.* " +
+        String getCommonFilms = "WITH sort AS " +
+                "    (SELECT f.FILM_ID AS sort_id " +
+                "            FROM FILM f " +
+                "            LEFT JOIN FILMLIKES fl on f.FILM_ID = fl.film_id " +
+                "            GROUP BY f.FILM_ID, fl.FILM_ID IN " +
+                "            (SELECT FILM_ID " +
+                "            FROM FILMLIKES) " +
+                "            ORDER BY COUNT(fl.FILM_ID) DESC) " +
+                "SELECT F.*, M.*, s.* " +
                 "FROM FILMLIKES FL " +
-                "JOIN FILM F on FL.FILM_ID = F.FILM_ID " +
-                "JOIN MPA M on F.MPA_ID = M.MPA_ID " +
+                "         JOIN FILM F on FL.FILM_ID = F.FILM_ID " +
+                "         JOIN MPA m on f.MPA_ID = m.MPA_ID " +
+                "         JOIN sort s on FL.FILM_ID = s.sort_id " +
                 "WHERE (FL.USER_ID = ? OR FL.USER_ID = ?) AND " +
-                "FL.FILM_ID IN (SELECT FL.FILM_ID " +
-                "FROM FILMLIKES FL " +
+                "        FL.FILM_ID IN (SELECT FL.FILM_ID " +
+                "                       FROM FILMLIKES FL " +
+                "                       GROUP BY FL.FILM_ID " +
+                "                       having count(*) > 1) " +
                 "GROUP BY FL.FILM_ID " +
-                "having count(*) > 1) " +
-                "GROUP BY FL.FILM_ID ";
-        List<Film> films = jdbcTemplate.query(getFilmsId, FilmDbStorageImpl::createFilm, userId, friendId);
+                "ORDER BY s.sort_id DESC";
+        List<Film> films = jdbcTemplate.query(getCommonFilms, FilmDbStorageImpl::createFilm, userId, friendId);
         loadGenres(films);
         loadDirectors(films);
         return films;
     }
-    
+
     public int getLikesByFilmId(Integer id) {
         String sqlQuery = "SELECT USER_ID FROM FILMLIKES WHERE FILM_ID = ?";
         return jdbcTemplate.queryForList(sqlQuery, id).size();
