@@ -40,7 +40,7 @@ public class FeedDbStorageImpl implements FeedDbStorage {
 
     @Override
     public List<Feed> getUserFeed(Integer id) {
-        String sqlQuery = "SELECT * FROM FEED WHERE USER_ID = ?";
+        String sqlQuery = "SELECT * FROM FEED WHERE USER_ID = ? ORDER BY TIMESTAMP";
         return jdbcTemplate.query(sqlQuery, FeedDbStorageImpl::feedRow, id);
     }
 
