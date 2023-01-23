@@ -156,7 +156,7 @@ public class UserDbStorageImpl implements UserDbStorage {
         HashMap<Integer, List<Integer>> userLikes = new HashMap<>();
         List<Integer> recommendFilmsId = new ArrayList<>();
         SqlRowSet userRows = jdbcTemplate.queryForRowSet("SELECT * FROM FILMLIKES where USER_ID IN " +
-                "(SELECT USER_ID FROM FILMLIKES where FILM_ID IN (SELECT FILM_ID FROM FILMLIKES where USER_ID=?)) ", id);
+            "(SELECT USER_ID FROM FILMLIKES where FILM_ID IN (SELECT FILM_ID FROM FILMLIKES where USER_ID=?)) ", id);
         while (userRows.next()) {
             insertLikeAndUser(userLikes, userRows.getInt("FILM_ID"), userRows.getInt("USER_ID"));
         }
