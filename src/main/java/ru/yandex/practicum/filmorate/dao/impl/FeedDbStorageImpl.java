@@ -34,19 +34,19 @@ public class FeedDbStorageImpl implements FeedDbStorage {
         feed.setEntityId(rs.getInt("ENTITY_ID"));
         feed.setOperation(Operation.valueOf(rs.getString("OPERATION")));
         feed.setEventType(EventType.valueOf(rs.getString("EVENT_TYPE")));
-        feed.setTimestamp(rs.getLong("TIMESTAMP"));
+        feed.setTimestamp(rs.getLong("EVENT_DATETIME"));
         return feed;
     }
 
     @Override
     public List<Feed> getUserFeed(Integer id) {
-        String sqlQuery = "SELECT * FROM FEED WHERE USER_ID = ? ORDER BY TIMESTAMP";
+        String sqlQuery = "SELECT * FROM FEED WHERE USER_ID = ? ORDER BY EVENT_DATETIME";
         return jdbcTemplate.query(sqlQuery, FeedDbStorageImpl::feedRow, id);
     }
 
     @Override
     public void addFeed(Integer userId, Integer entityId, Operation operation, EventType eventType) {
-        String sqlQuery = "INSERT INTO FEED (USER_ID, ENTITY_ID, OPERATION, EVENT_TYPE, TIMESTAMP) " +
+        String sqlQuery = "INSERT INTO FEED (USER_ID, ENTITY_ID, OPERATION, EVENT_TYPE, EVENT_DATETIME) " +
                 "VALUES (?, ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
         jdbcTemplate.update((connection) -> {

@@ -90,5 +90,5 @@ CREATE TABLE IF NOT EXISTS FEED (
     entity_id INTEGER NOT NULL,
     operation VARCHAR(6) NOT NULL,
     event_type VARCHAR(6) NOT NULL,
-    timestamp LONG NOT NULL
+    event_datetime LONG NOT NULL
 );
