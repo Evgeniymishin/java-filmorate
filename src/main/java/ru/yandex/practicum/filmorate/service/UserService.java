@@ -5,13 +5,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.yandex.practicum.filmorate.dao.FeedDbStorage;
+import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Feed;
+import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.User;
 import ru.yandex.practicum.filmorate.model.enums.EventType;
 import ru.yandex.practicum.filmorate.model.enums.Operation;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -21,6 +24,7 @@ import java.util.Optional;
 public class UserService {
     private final UserDbStorage storage;
     private final FeedDbStorage feedStorage;
+    private final FilmDbStorage filmStorage;
 
     public List<User> getAll() {
         return storage.getAll();
@@ -89,4 +93,15 @@ public class UserService {
         return feedStorage.getUserFeed(id);
     }
 
+    public List<Film> getRecommendations(Integer id) {
+        validateUser(id);
+        List<Integer> recommendationsFilmsId = storage.getRecommendations(id);
+        List<Film> recommendFilms = new ArrayList<>();
+        if (recommendationsFilmsId.size() != 0) {
+            for (Integer filmId : recommendationsFilmsId) {
+                recommendFilms.add(filmStorage.getById(filmId).get());
+            }
+        }
+        return recommendFilms;
+    }
 }
