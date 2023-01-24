@@ -53,7 +53,6 @@ public class UserDbStorageImpl implements UserDbStorage {
         String sqlQuery = "INSERT INTO USERS (EMAIL, LOGIN, NAME, BIRTHDAY) " +
                 "VALUES ( ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"USER_ID"});
             stmt.setString(1, user.getEmail());
@@ -63,7 +62,6 @@ public class UserDbStorageImpl implements UserDbStorage {
             return stmt;
         }, keyHolder);
         user.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
-
         return user;
     }
 
@@ -100,7 +98,7 @@ public class UserDbStorageImpl implements UserDbStorage {
         String sqlQuery = "MERGE INTO USERFRIENDS (INITIAL_USER_ID, SECOND_USER_ID) " +
                 "VALUES (?, ?)";
         jdbcTemplate.update(sqlQuery, currentUserId, friendUserId);
-
+        log.info("Пользователь с id {} добавил пользователя {} в друзья", currentUserId, friendUserId);
         return List.of(currentUserId, friendUserId);
     }
 
@@ -108,7 +106,7 @@ public class UserDbStorageImpl implements UserDbStorage {
     public List<Integer> deleteFriend(Integer currentUserId, Integer friendUserId) {
         String sqlQuery = "DELETE FROM USERFRIENDS WHERE INITIAL_USER_ID = ? AND SECOND_USER_ID = ?";
         jdbcTemplate.update(sqlQuery, currentUserId, friendUserId);
-
+        log.info("Пользователь с id {} удалил пользователя {} из друзей", currentUserId, friendUserId);
         return List.of(currentUserId, friendUserId);
     }
 
@@ -150,4 +148,5 @@ public class UserDbStorageImpl implements UserDbStorage {
         String sqlQuery = "DELETE FROM USERFRIENDS WHERE INITIAL_USER_ID = ? OR SECOND_USER_ID = ?";
         jdbcTemplate.update(sqlQuery, id, id);
     }
+
 }
