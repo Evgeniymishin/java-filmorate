@@ -3,7 +3,6 @@ package ru.yandex.practicum.filmorate.dao.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
@@ -22,7 +21,6 @@ import java.util.List;
 @Slf4j
 @Repository
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
-@Qualifier("FeedDbStorage")
 public class FeedDbStorageImpl implements FeedDbStorage {
 
     private final JdbcTemplate jdbcTemplate;
