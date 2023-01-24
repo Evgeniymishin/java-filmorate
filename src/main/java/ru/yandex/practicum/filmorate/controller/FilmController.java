@@ -61,4 +61,9 @@ public class FilmController {
         service.deleteById(filmId);
     }
 
+    @GetMapping("/films/search")
+    public List<Film> getSortedListFilm(@RequestParam(name = "query", required = false) String query,
+                                        @RequestParam(name = "by", required = false) List<String> by) {
+        return service.getSortedListFilm(query, by);
+    }
 }

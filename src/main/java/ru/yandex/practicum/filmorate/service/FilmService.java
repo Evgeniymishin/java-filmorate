@@ -110,4 +110,8 @@ public class FilmService {
         validateFilmAvailabilityById(filmId);
         return storage.deleteById(filmId);
     }
+
+    public List<Film> getSortedListFilm(String query, List<String> by) {
+        return storage.getSortedListFilm(query, by);
+    }
 }

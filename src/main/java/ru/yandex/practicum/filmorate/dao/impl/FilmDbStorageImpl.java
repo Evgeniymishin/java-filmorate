@@ -20,10 +20,8 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.model.Genre;
 import ru.yandex.practicum.filmorate.model.Mpa;
 
+import java.sql.*;
 import java.sql.Date;
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-import java.sql.SQLException;
 import java.time.LocalDate;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -249,6 +247,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         loadDirectors(films);
         return films;
     }
+
     private void deleteFromFilm(Integer id) {
         String sqlQuery = "DELETE FROM FILM WHERE FILM_ID = ?";
         jdbcTemplate.update(sqlQuery, id);
@@ -259,9 +258,37 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         jdbcTemplate.update(sqlQuery, id);
     }
 
+    public List<Film> getSortedListFilm(String query, List<String> by) {
+        List<Film> films;
+        String director = null;
+        String title = null;
+
+        if (by.contains("director")) {
+            director = query;
+        }
+        if (by.contains("title")) {
+            title = query;
+        }
+        String sortedFilms = "SELECT f.*, m.*, d.* " +
+                "FROM FILM f " +
+                "LEFT JOIN FILMDIRECTOR fd on f.FILM_ID = fd.FILM_ID " +
+                "LEFT JOIN DIRECTOR d on fd.DIRECTOR_ID = d.DIRECTOR_ID " +
+                "JOIN MPA m on f.MPA_ID = m.MPA_ID " +
+                "LEFT JOIN FILMLIKES fl on f.FILM_ID = fl.film_id " +
+                "WHERE regexp_like(d.name, ?, 'i') OR " +
+                "regexp_like(f.name, ?, 'i')" +
+                "GROUP BY f.FILM_ID, fl.FILM_ID IN ( " +
+                "SELECT FILM_ID " +
+                "FROM FILMLIKES ) " +
+                "ORDER BY COUNT(fl.FILM_ID) DESC";
+        films = jdbcTemplate.query(sortedFilms, FilmDbStorageImpl::createFilm, director, title);
+        loadGenres(films);
+        loadDirectors(films);
+        return films;
+    }
+
     public int getLikesByFilmId(Integer id) {
         String sqlQuery = "SELECT USER_ID FROM FILMLIKES WHERE FILM_ID = ?";
         return jdbcTemplate.queryForList(sqlQuery, id).size();
     }
-
 }
