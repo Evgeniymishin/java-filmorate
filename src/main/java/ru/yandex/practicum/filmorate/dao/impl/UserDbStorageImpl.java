@@ -151,53 +151,53 @@ public class UserDbStorageImpl implements UserDbStorage {
         String sqlQuery = "DELETE FROM USERFRIENDS WHERE INITIAL_USER_ID = ? OR SECOND_USER_ID = ?";
         jdbcTemplate.update(sqlQuery, id, id);
     }
+
     @Override
     public List<Integer> getRecommendations(Integer id) {
         HashMap<Integer, List<Integer>> userLikes = new HashMap<>();
         List<Integer> recommendFilmsId = new ArrayList<>();
         SqlRowSet userRows = jdbcTemplate.queryForRowSet("SELECT * FROM FILMLIKES where USER_ID IN " +
-            "(SELECT USER_ID FROM FILMLIKES where FILM_ID IN (SELECT FILM_ID FROM FILMLIKES where USER_ID=?)) ", id);
+                "(SELECT USER_ID FROM FILMLIKES where FILM_ID " +
+                "IN (SELECT FILM_ID FROM FILMLIKES where USER_ID=?)) ", id);
         while (userRows.next()) {
-            insertLikeAndUser(userLikes, userRows.getInt("FILM_ID"), userRows.getInt("USER_ID"));
+            List<Integer> usersFilms = userLikes.getOrDefault(userRows.getInt("USER_ID"), new ArrayList<>());
+            usersFilms.add(userRows.getInt("FILM_ID"));
+            userLikes.put(userRows.getInt("USER_ID"), usersFilms);
         }
-        Integer idUserWithMaxMatchLikes = findUserWithMaxMatchLikes(userLikes, id);
-        if (idUserWithMaxMatchLikes != 0) {
-            for (Integer filmId : userLikes.get(idUserWithMaxMatchLikes)) {
+        List<Integer> idUserWithMaxMatchLikes = findUsersIdWithMaxMatchLikes(userLikes, id);
+        for (Integer userId : idUserWithMaxMatchLikes) {
+            for (Integer filmId : userLikes.get(userId)) {
                 if (!userLikes.get(id).contains(filmId)) {
                     recommendFilmsId.add(filmId);
                 }
+            }
+            if (recommendFilmsId.size() != 0) {
+                break;
             }
         }
         return recommendFilmsId;
     }
 
-    private void insertLikeAndUser(Map<Integer, List<Integer>> usersLikes, int like, int userId) {
-        List<Integer> newUserLike = new ArrayList<>();
-        if (usersLikes.containsKey(userId)) {
-            newUserLike.add(like);
-            usersLikes.get(userId).addAll(newUserLike);
-        } else {
-            newUserLike.add(like);
-            usersLikes.put(userId, newUserLike);
-        }
-    }
-
-    private int findUserWithMaxMatchLikes(HashMap<Integer, List<Integer>> userLikes, int id) {
-        int maxMatchFilms = 0;
-        int userId = 0;
+    private List<Integer> findUsersIdWithMaxMatchLikes(HashMap<Integer, List<Integer>> userLikes, int id) {
+        Map<Integer, Integer> usersWithMatchLikes = new HashMap<>();
         for (Map.Entry<Integer, List<Integer>> entry : userLikes.entrySet()) {
-            Integer matchFilm = 0;
+            int matchFilm = 0;
             if (entry.getKey() != id) {
                 for (Integer like : entry.getValue()) {
                     if (userLikes.get(id).contains(like)) {
                         matchFilm++;
                     }
                 }
-            }
-            if (matchFilm > maxMatchFilms) {
-                userId = entry.getKey();
+                usersWithMatchLikes.put(entry.getKey(), matchFilm);
             }
         }
-        return userId;
+        List<Integer> sortedUsersIdWithMaxMatchLikes = new ArrayList<>();
+        usersWithMatchLikes.entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .forEach(entry -> {
+                    sortedUsersIdWithMaxMatchLikes.add(entry.getKey());
+                });
+        return sortedUsersIdWithMaxMatchLikes;
     }
 }
