@@ -277,11 +277,12 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "WHERE (FL.USER_ID = ? OR FL.USER_ID = ?) AND " +
                 "        FL.FILM_ID IN (SELECT FL.FILM_ID " +
                 "                       FROM FILMLIKES FL " +
+                "                       WHERE FL.USER_ID = ? OR FL.USER_ID = ? " +
                 "                       GROUP BY FL.FILM_ID " +
                 "                       having count(*) > 1) " +
                 "GROUP BY FL.FILM_ID " +
                 "ORDER BY s.sort_id DESC";
-        List<Film> films = jdbcTemplate.query(getCommonFilms, FilmDbStorageImpl::createFilm, userId, friendId);
+        List<Film> films = jdbcTemplate.query(getCommonFilms, FilmDbStorageImpl::createFilm, userId, friendId, userId, friendId);
         loadGenres(films);
         loadDirectors(films);
         return films;
