@@ -15,5 +15,4 @@ public interface UserDbStorage {
     List<Integer> deleteFriend(Integer currentUserId, Integer friendUserId);
     List<User> getFriendsListById(Integer id);
     List<User> getCommonFriends(Integer firstUserId, Integer secondUserId);
-    List<Integer> getRecommendations(Integer id);
 }

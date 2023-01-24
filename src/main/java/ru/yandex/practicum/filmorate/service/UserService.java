@@ -4,13 +4,14 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import ru.yandex.practicum.filmorate.dao.FilmDbStorage;
+import ru.yandex.practicum.filmorate.dao.FeedDbStorage;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
-import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.Feed;
 import ru.yandex.practicum.filmorate.model.User;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -19,7 +20,7 @@ import java.util.Optional;
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class UserService {
     private final UserDbStorage storage;
-    private final FilmDbStorage filmStorage;
+    private final FeedDbStorage feedStorage;
 
     public List<User> getAll() {
         return storage.getAll();
@@ -48,15 +49,17 @@ public class UserService {
     public List<Integer> addFriend(Integer currentUserId, Integer friendUserId) {
         validateUser(currentUserId);
         validateUser(friendUserId);
-        log.info("Пользователь с id {} добавил пользователя {} в друзья", currentUserId, friendUserId);
-        return storage.addFriend(currentUserId, friendUserId);
+        List<Integer> listUsers = storage.addFriend(currentUserId, friendUserId);
+        feedStorage.addFeed(currentUserId, friendUserId, Operation.ADD, EventType.FRIEND);
+        return listUsers;
     }
 
     public List<Integer> deleteFriend(Integer currentUserId, Integer friendUserId) {
         validateUser(currentUserId);
         validateUser(friendUserId);
-        log.info("Пользователь с id {} удалил пользователя {} из друзей", currentUserId, friendUserId);
-        return storage.deleteFriend(currentUserId, friendUserId);
+        List<Integer> listUsers = storage.deleteFriend(currentUserId, friendUserId);
+        feedStorage.addFeed(currentUserId, friendUserId, Operation.REMOVE, EventType.FRIEND);
+        return listUsers;
     }
 
     public void validateUser(Integer id) {
@@ -81,15 +84,9 @@ public class UserService {
         return storage.deleteById(userId);
     }
 
-    public List<Film> getRecommendations(Integer id) {
+    public List<Feed> getUserFeed(Integer id) {
         validateUser(id);
-        List<Integer> recommendationsFilmsId = storage.getRecommendations(id);
-        List<Film> recommendFilms = new ArrayList<>();
-        if (recommendationsFilmsId.size() != 0) {
-            for (Integer filmId : recommendationsFilmsId) {
-                recommendFilms.add(filmStorage.getById(filmId).get());
-            }
-        }
-        return recommendFilms;
+        return feedStorage.getUserFeed(id);
     }
+
 }

@@ -4,12 +4,15 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.FeedDbStorage;
 import ru.yandex.practicum.filmorate.dao.impl.DirectorDbStorageImpl;
 import ru.yandex.practicum.filmorate.dao.impl.FilmDbStorageImpl;
 import ru.yandex.practicum.filmorate.dao.impl.UserDbStorageImpl;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.exception.ValidationException;
 import ru.yandex.practicum.filmorate.model.Film;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -24,6 +27,7 @@ public class FilmService {
     private final FilmDbStorageImpl storage;
     private final UserDbStorageImpl userStorage;
     private final DirectorDbStorageImpl directorStorage;
+    private final FeedDbStorage feedStorage;
     private static final LocalDate MIN_DATE = LocalDate.of(1895, 12, 28);
     private static final String MIN_DATE_MSG = "Дата релиза не может быть раньше даты зарождения кино";
 
@@ -71,15 +75,17 @@ public class FilmService {
     public Film like(Integer filmId, Integer userId) {
         validateFilmAvailabilityById(filmId);
         validateUserAvailabilityById(userId);
-        log.info("Пользователь {} поставил лайк фильму {}", userId, filmId);
-        return storage.addLike(filmId, userId).orElseThrow();
+        Film film = storage.addLike(filmId, userId).orElseThrow();
+        feedStorage.addFeed(userId, filmId, Operation.ADD, EventType.LIKE);
+        return film;
     }
 
     public Film dislike(Integer filmId, Integer userId) {
         validateFilmAvailabilityById(filmId);
         validateUserAvailabilityById(userId);
-        log.info("Пользователь {} поставил дизлайк фильму {}", userId, filmId);
-        return storage.removeLike(filmId, userId).orElseThrow();
+        Film film = storage.removeLike(filmId, userId).orElseThrow();
+        feedStorage.addFeed(userId, filmId, Operation.REMOVE, EventType.LIKE);
+        return film;
     }
 
     public List<Film> getMostPopularFilms(Integer count, Integer genreId, Integer year) {
@@ -109,5 +115,9 @@ public class FilmService {
     public Optional<Film> deleteById(Integer filmId) {
         validateFilmAvailabilityById(filmId);
         return storage.deleteById(filmId);
+    }
+
+    public List<Film> getSortedListFilm(String query, List<String> by) {
+        return storage.getSortedListFilm(query, by);
     }
 }
