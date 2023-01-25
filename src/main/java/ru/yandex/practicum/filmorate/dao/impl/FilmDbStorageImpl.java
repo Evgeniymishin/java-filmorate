@@ -260,6 +260,34 @@ public class FilmDbStorageImpl implements FilmDbStorage {
         jdbcTemplate.update(sqlQuery, id);
     }
 
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        String getCommonFilms = "WITH sort AS " +
+                "    (SELECT f.FILM_ID AS sort_id " +
+                "            FROM FILM f " +
+                "            LEFT JOIN FILMLIKES fl on f.FILM_ID = fl.film_id " +
+                "            GROUP BY f.FILM_ID, fl.FILM_ID IN " +
+                "            (SELECT FILM_ID " +
+                "            FROM FILMLIKES) " +
+                "            ORDER BY COUNT(fl.FILM_ID) DESC) " +
+                "SELECT F.*, M.*, s.* " +
+                "FROM FILMLIKES FL " +
+                "         JOIN FILM F on FL.FILM_ID = F.FILM_ID " +
+                "         JOIN MPA m on f.MPA_ID = m.MPA_ID " +
+                "         JOIN sort s on FL.FILM_ID = s.sort_id " +
+                "WHERE (FL.USER_ID = ? OR FL.USER_ID = ?) AND " +
+                "        FL.FILM_ID IN (SELECT FL.FILM_ID " +
+                "                       FROM FILMLIKES FL " +
+                "                       WHERE FL.USER_ID = ? OR FL.USER_ID = ? " +
+                "                       GROUP BY FL.FILM_ID " +
+                "                       having count(*) > 1) " +
+                "GROUP BY FL.FILM_ID " +
+                "ORDER BY s.sort_id DESC";
+        List<Film> films = jdbcTemplate.query(getCommonFilms, FilmDbStorageImpl::createFilm, userId, friendId, userId, friendId);
+        loadGenres(films);
+        loadDirectors(films);
+        return films;
+    }
+
     public List<Film> getSortedListFilm(String query, List<String> by) {
         List<Film> films;
         String director = null;

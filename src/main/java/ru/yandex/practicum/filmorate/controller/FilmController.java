@@ -61,6 +61,12 @@ public class FilmController {
         service.deleteById(filmId);
     }
 
+    @GetMapping("/films/common")
+    public List<Film> getCommonFilms(@RequestParam(name = "userId") Integer userId,
+                                        @RequestParam(name = "friendId") Integer friendId) {
+        return service.getCommonFilms(userId, friendId);
+    }
+
     @GetMapping("/films/search")
     public List<Film> getSortedListFilm(@RequestParam(name = "query", required = false) String query,
                                         @RequestParam(name = "by", required = false) List<String> by) {

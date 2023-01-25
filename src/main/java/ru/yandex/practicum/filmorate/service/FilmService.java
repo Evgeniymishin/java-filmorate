@@ -117,6 +117,10 @@ public class FilmService {
         return storage.deleteById(filmId);
     }
 
+    public List<Film> getCommonFilms(Integer userId, Integer friendId) {
+        return storage.getCommonFilms(userId, friendId);
+    }
+    
     public List<Film> getSortedListFilm(String query, List<String> by) {
         return storage.getSortedListFilm(query, by);
     }
