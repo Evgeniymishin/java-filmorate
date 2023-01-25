@@ -1,14 +1,16 @@
 package ru.yandex.practicum.filmorate.service;
 
-
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import ru.yandex.practicum.filmorate.dao.FeedDbStorage;
 import ru.yandex.practicum.filmorate.dao.ReviewDbStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
 import ru.yandex.practicum.filmorate.model.Review;
 import ru.yandex.practicum.filmorate.model.ReviewRating;
+import ru.yandex.practicum.filmorate.model.enums.EventType;
+import ru.yandex.practicum.filmorate.model.enums.Operation;
 
 import java.util.List;
 
@@ -19,12 +21,14 @@ public class ReviewService {
     private final ReviewDbStorage storage;
     private final UserService userService;
     private final FilmService filmService;
+    private final FeedDbStorage feedStorage;
 
     public Review addReview(Review rowData) {
         userService.getById(rowData.getUserId());
         filmService.getById(rowData.getFilmId());
         return storage.create(rowData).map(review -> {
                     log.info("Добавлен новый отзыв: {}", review.toString());
+                    feedStorage.addFeed(review.getUserId(), review.getReviewId(), Operation.ADD, EventType.REVIEW);
                     return review;
                 })
                 .orElseThrow(() -> {
@@ -41,13 +45,16 @@ public class ReviewService {
     }
 
     public void deleteReview(Integer id) {
+        Review review = getReview(id);
         storage.deleteById(id);
+        feedStorage.addFeed(review.getUserId(), id, Operation.REMOVE, EventType.REVIEW);
         log.info("Удален отзыв: {}", id);
     }
 
     public Review updateReview(Review rowData) {
         return storage.update(rowData).map(review -> {
                     log.info("Обновлен отзыв: {}", review.toString());
+                    feedStorage.addFeed(review.getUserId(), review.getReviewId(), Operation.UPDATE, EventType.REVIEW);
                     return review;
                 })
                 .orElseThrow(() -> {
