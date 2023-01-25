@@ -2,5 +2,4 @@
 
 ## Схема БД
 
-![Filmogram](https://user-images.githubusercontent.com/32869331/212183017-b665e96c-4c42-49ad-86ba-e0fa2f88c28e.png)
-
+![Filmogram](https://user-images.githubusercontent.com/32869331/214514723-eb64cc6f-e857-428e-9f10-5c940f63d59e.png)
