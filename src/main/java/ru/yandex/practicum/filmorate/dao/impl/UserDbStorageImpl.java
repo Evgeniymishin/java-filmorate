@@ -3,10 +3,12 @@ package ru.yandex.practicum.filmorate.dao.impl;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.dao.DataAccessException;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.jdbc.support.KeyHolder;
+import org.springframework.jdbc.support.rowset.SqlRowSet;
 import org.springframework.stereotype.Repository;
 import ru.yandex.practicum.filmorate.dao.UserDbStorage;
 import ru.yandex.practicum.filmorate.exception.NotFoundException;
@@ -22,6 +24,7 @@ import java.util.*;
 @Slf4j
 @Repository
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
+@Qualifier("UserDbStorage")
 public class UserDbStorageImpl implements UserDbStorage {
     private final JdbcTemplate jdbcTemplate;
 
@@ -40,7 +43,7 @@ public class UserDbStorageImpl implements UserDbStorage {
         String sqlQuery = "SELECT * FROM USERS WHERE USER_ID = ?";
         try {
             return Optional.ofNullable(jdbcTemplate.queryForObject(sqlQuery, UserDbStorageImpl::createUser, id));
-        } catch (DataAccessException e){
+        } catch (DataAccessException e) {
             log.warn("Пользователь с идентификатором {} не найден.", id);
             return Optional.empty();
         }
@@ -51,7 +54,6 @@ public class UserDbStorageImpl implements UserDbStorage {
         String sqlQuery = "INSERT INTO USERS (EMAIL, LOGIN, NAME, BIRTHDAY) " +
                 "VALUES ( ?, ?, ?, ?)";
         KeyHolder keyHolder = new GeneratedKeyHolder();
-
         jdbcTemplate.update(connection -> {
             PreparedStatement stmt = connection.prepareStatement(sqlQuery, new String[]{"USER_ID"});
             stmt.setString(1, user.getEmail());
@@ -61,7 +63,6 @@ public class UserDbStorageImpl implements UserDbStorage {
             return stmt;
         }, keyHolder);
         user.setId(Objects.requireNonNull(keyHolder.getKey()).intValue());
-
         return user;
     }
 
@@ -85,9 +86,11 @@ public class UserDbStorageImpl implements UserDbStorage {
 
     @Override
     public Optional<User> deleteById(Integer id) {
-        String sqlQuery = "delete from USERS where USER_ID = ?";
         Optional<User> user = getById(id);
-        jdbcTemplate.update(sqlQuery, id);
+        deleteFromFilmUsersLikes(id);
+        deleteFromFriends(id);
+        deleteFromUsers(id);
+        log.info("Пользователь с id {} удалён", id);
         return user;
     }
 
@@ -96,7 +99,7 @@ public class UserDbStorageImpl implements UserDbStorage {
         String sqlQuery = "MERGE INTO USERFRIENDS (INITIAL_USER_ID, SECOND_USER_ID) " +
                 "VALUES (?, ?)";
         jdbcTemplate.update(sqlQuery, currentUserId, friendUserId);
-
+        log.info("Пользователь с id {} добавил пользователя {} в друзья", currentUserId, friendUserId);
         return List.of(currentUserId, friendUserId);
     }
 
@@ -104,12 +107,12 @@ public class UserDbStorageImpl implements UserDbStorage {
     public List<Integer> deleteFriend(Integer currentUserId, Integer friendUserId) {
         String sqlQuery = "DELETE FROM USERFRIENDS WHERE INITIAL_USER_ID = ? AND SECOND_USER_ID = ?";
         jdbcTemplate.update(sqlQuery, currentUserId, friendUserId);
-
+        log.info("Пользователь с id {} удалил пользователя {} из друзей", currentUserId, friendUserId);
         return List.of(currentUserId, friendUserId);
     }
 
     @Override
-    public List<User> getFriendsListById (Integer id) {
+    public List<User> getFriendsListById(Integer id) {
         String sqlQuery = "SELECT USERS.USER_ID, EMAIL, LOGIN, NAME, BIRTHDAY " +
                 "FROM USERS " +
                 "LEFT JOIN USERFRIENDS f on users.USER_ID = f.SECOND_USER_ID " +
@@ -132,4 +135,64 @@ public class UserDbStorageImpl implements UserDbStorage {
         return jdbcTemplate.query(sqlQuery, UserDbStorageImpl::createUser, firstUserId, secondUserId);
     }
 
+    private void deleteFromUsers(Integer id) {
+        String sqlQuery = "delete from USERS where USER_ID = ?";
+        jdbcTemplate.update(sqlQuery, id);
+    }
+
+    private void deleteFromFilmUsersLikes(Integer id) {
+        String sqlQuery = "DELETE FROM FILMLIKES WHERE USER_ID = ?";
+        jdbcTemplate.update(sqlQuery, id);
+    }
+
+    private void deleteFromFriends(Integer id) {
+        String sqlQuery = "DELETE FROM USERFRIENDS WHERE INITIAL_USER_ID = ? OR SECOND_USER_ID = ?";
+        jdbcTemplate.update(sqlQuery, id, id);
+    }
+    @Override
+    public List<Integer> getRecommendations(Integer id) {
+        HashMap<Integer, List<Integer>> userLikes = new HashMap<>();
+        List<Integer> recommendFilmsId = new ArrayList<>();
+        SqlRowSet userRows = jdbcTemplate.queryForRowSet("SELECT * FROM FILMLIKES where USER_ID IN " +
+                "(SELECT USER_ID FROM FILMLIKES where FILM_ID " +
+                "IN (SELECT FILM_ID FROM FILMLIKES where USER_ID=?)) ", id);
+        while (userRows.next()) {
+            List<Integer> usersFilms = userLikes.getOrDefault(userRows.getInt("USER_ID"), new ArrayList<>());
+            usersFilms.add(userRows.getInt("FILM_ID"));
+            userLikes.put(userRows.getInt("USER_ID"), usersFilms);
+        }
+        List<Integer> idUserWithMaxMatchLikes = findUsersIdWithMaxMatchLikes(userLikes, id);
+        for (Integer userId : idUserWithMaxMatchLikes) {
+            for (Integer filmId : userLikes.get(userId)) {
+                if (!userLikes.get(id).contains(filmId)) {
+                    recommendFilmsId.add(filmId);
+                }
+            }
+            if (!recommendFilmsId.isEmpty()) {
+                break;
+            }
+        }
+        return recommendFilmsId;
+    }
+
+    private List<Integer> findUsersIdWithMaxMatchLikes(HashMap<Integer, List<Integer>> userLikes, int id) {
+        Map<Integer, Integer> usersWithMatchLikes = new HashMap<>();
+        for (Map.Entry<Integer, List<Integer>> entry : userLikes.entrySet()) {
+            int matchFilm = 0;
+            if (entry.getKey() != id) {
+                for (Integer like : entry.getValue()) {
+                    if (userLikes.get(id).contains(like)) {
+                        matchFilm++;
+                    }
+                }
+                usersWithMatchLikes.put(entry.getKey(), matchFilm);
+            }
+        }
+        List<Integer> sortedUsersIdWithMaxMatchLikes = new ArrayList<>();
+        usersWithMatchLikes.entrySet()
+                .stream()
+                .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
+                .forEach(entry -> sortedUsersIdWithMaxMatchLikes.add(entry.getKey()));
+        return sortedUsersIdWithMaxMatchLikes;
+    }
 }

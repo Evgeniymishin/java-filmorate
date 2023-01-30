@@ -7,15 +7,11 @@ import ru.yandex.practicum.filmorate.model.Film;
 import ru.yandex.practicum.filmorate.service.FilmService;
 
 import javax.validation.Valid;
-import java.time.LocalDate;
 import java.util.List;
 
 @RestController
 @RequiredArgsConstructor(onConstructor_ = @Autowired)
 public class FilmController {
-    private static final LocalDate MIN_DATE = LocalDate.of(1895, 12, 28);
-    private static final String MIN_DATE_MSG = "Дата релиза не может быть раньше даты зарождения кино";
-    private static final String NO_FILM_MSG = "Такого фильма нет";
     private final FilmService service;
 
     @GetMapping("/films")
@@ -39,8 +35,10 @@ public class FilmController {
     }
 
     @GetMapping("/films/popular")
-    public List<Film> getMostPopularFilms(@RequestParam(defaultValue = "10") String count) {
-        return service.getMostPopularFilms(Integer.parseInt(count));
+    public List<Film> getMostPopularFilms(@RequestParam(defaultValue = "10", required = false) Integer count,
+                                          @RequestParam(required = false) Integer genreId,
+                                          @RequestParam(required = false) Integer year) {
+        return service.getMostPopularFilms(count, genreId, year);
     }
 
     @PutMapping("/films/{id}/like/{userId}")
@@ -53,4 +51,25 @@ public class FilmController {
         return service.dislike(id, userId);
     }
 
+    @GetMapping("/films/director/{directorId}")
+    public List<Film> getAllFilmsByDirector(@PathVariable Integer directorId, @RequestParam(defaultValue = "year") String sortBy) {
+        return service.getAllByDirector(directorId, sortBy);
+    }
+
+    @DeleteMapping("/films/{filmId}")
+    public void deleteFilm(@PathVariable Integer filmId) {
+        service.deleteById(filmId);
+    }
+
+    @GetMapping("/films/common")
+    public List<Film> getCommonFilms(@RequestParam(name = "userId") Integer userId,
+                                        @RequestParam(name = "friendId") Integer friendId) {
+        return service.getCommonFilms(userId, friendId);
+    }
+
+    @GetMapping("/films/search")
+    public List<Film> getSortedListFilm(@RequestParam(name = "query", required = false) String query,
+                                        @RequestParam(name = "by", required = false) List<String> by) {
+        return service.getSortedListFilm(query, by);
+    }
 }
