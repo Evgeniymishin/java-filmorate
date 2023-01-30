@@ -29,7 +29,7 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
     public Optional<Review> create(Review review) {
         String check = "select id from REVIEWS where film_id = ? and user_id = ?";
         List<Integer> list = jdbcTemplate.query(check, (r, i) -> r.getInt("id"), review.getFilmId(), review.getUserId());
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             SimpleJdbcInsert insert = new SimpleJdbcInsert(jdbcTemplate)
                     .withTableName("REVIEWS")
                     .usingGeneratedKeyColumns("id");
@@ -85,14 +85,14 @@ public class ReviewDbStorageImpl implements ReviewDbStorage {
     @Override
     public Optional<ReviewRating> manageLikeDislike(Integer id, Integer userId, Boolean isLike, Boolean value) {
         String likesOrDislikes;
-        if (isLike) {
+        if (Boolean.TRUE.equals(isLike)) {
             likesOrDislikes = "likes";
         } else {
             likesOrDislikes = "dislikes";
         }
         String check = "select id from REVIEWSRATING where review_id = ? and user_id = ?";
         List<Integer> list = jdbcTemplate.query(check, (r, i) -> r.getInt("id"), id, userId);
-        if (list.size() == 0) {
+        if (list.isEmpty()) {
             String query = "insert into REVIEWSRATING (review_id, user_id, " + likesOrDislikes + ") values (?, ?, ?)";
             KeyHolder keyHolder = new GeneratedKeyHolder();
             jdbcTemplate.update(connection -> {

@@ -97,7 +97,7 @@ public class UserService {
         validateUser(id);
         List<Integer> recommendationsFilmsId = storage.getRecommendations(id);
         List<Film> recommendFilms = new ArrayList<>();
-        if (recommendationsFilmsId.size() != 0) {
+        if (!recommendationsFilmsId.isEmpty()) {
             for (Integer filmId : recommendationsFilmsId) {
                 recommendFilms.add(filmStorage.getById(filmId).get());
             }

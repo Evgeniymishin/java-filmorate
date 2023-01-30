@@ -239,7 +239,7 @@ public class FilmDbStorageImpl implements FilmDbStorage {
                 "WHERE DIRECTOR_ID = ? " +
                 "GROUP BY f.FILM_ID, f.RELEASE_DATE " +
                 "ORDER BY EXTRACT(YEAR FROM cast(f.RELEASE_DATE AS date))";
-        List<Film> films = new ArrayList<>();
+        List<Film> films;
         if (sortBy.equals("likes")) {
             films = jdbcTemplate.query(sortedByLikes, FilmDbStorageImpl::createFilm, directorId);
         } else {

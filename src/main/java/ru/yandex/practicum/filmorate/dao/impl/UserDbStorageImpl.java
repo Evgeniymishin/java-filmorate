@@ -168,7 +168,7 @@ public class UserDbStorageImpl implements UserDbStorage {
                     recommendFilmsId.add(filmId);
                 }
             }
-            if (recommendFilmsId.size() != 0) {
+            if (!recommendFilmsId.isEmpty()) {
                 break;
             }
         }
@@ -192,9 +192,7 @@ public class UserDbStorageImpl implements UserDbStorage {
         usersWithMatchLikes.entrySet()
                 .stream()
                 .sorted(Collections.reverseOrder(Map.Entry.comparingByValue()))
-                .forEach(entry -> {
-                    sortedUsersIdWithMaxMatchLikes.add(entry.getKey());
-                });
+                .forEach(entry -> sortedUsersIdWithMaxMatchLikes.add(entry.getKey()));
         return sortedUsersIdWithMaxMatchLikes;
     }
 }
